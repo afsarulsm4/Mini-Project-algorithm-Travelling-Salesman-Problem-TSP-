@@ -1,0 +1,155 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Function to get the name of a city (A, B, C, etc.)
+char getCityName(int index) {
+    return 'A' + index;
+}
+
+// Function to get the index of a city (A = 0, B = 1, C = 2, etc.)
+int getCityIndex(char name) {
+    return name - 'A';
+}
+
+// Function to solve the Travelling Salesman Problem and show all routes
+int tsp(vector<vector<int>> &cost) {
+    int numCities = cost.size(); // Number of cities
+    vector<int> cities;
+
+    // Add all cities except the starting city (city 0)
+    for (int i = 1; i < numCities; i++) {
+        cities.push_back(i);
+    }
+
+    int minCost = 1e9; // Very large number to start with
+    vector<int> bestRoute;
+
+    // Try all possible orders of visiting the cities
+    cout << "\nAll Possible Routes and Their Costs:\n";
+    do {
+        int currentCost = 0;
+        int currentCity = 0; // Start at city 0
+        vector<int> currentRoute = {0}; // Start route with city 0
+
+        // Visit the cities in the current order
+        for (int nextCity : cities) {
+            currentCost += cost[currentCity][nextCity];
+            currentCity = nextCity;
+            currentRoute.push_back(currentCity);
+        }
+
+        // Add the cost to return to the starting city
+        currentCost += cost[currentCity][0];
+        currentRoute.push_back(0); // Complete the cycle
+
+        // Print the current route and its cost
+        cout << "Route: ";
+        for (int i = 0; i < currentRoute.size(); i++) {
+            cout << getCityName(currentRoute[i]);
+            if (i < currentRoute.size() - 1) {
+                cout << " --> ";
+            }
+        }
+        cout << "  ||  Cost: " << currentCost << endl;
+
+        // Check if this is the cheapest route so far
+        if (currentCost < minCost) {
+            minCost = currentCost;
+            bestRoute = currentRoute;
+        }
+    } while (next_permutation(cities.begin(), cities.end()));
+
+    // Print the best route
+    cout << "\nBest Route: ";
+    for (int i = 0; i < bestRoute.size(); i++) {
+        cout << getCityName(bestRoute[i]);
+        if (i < bestRoute.size() - 1) {
+            cout << " --> ";
+        }
+    }
+    cout << endl;
+
+    return minCost;
+}
+
+// Function to calculate the cost of a specific route
+int calculateRouteCost(vector<vector<int>> &cost, vector<int> &route) {
+    int totalCost = 0;
+
+    // Calculate the total cost of the given route
+    for (int i = 0; i < route.size() - 1; i++) {
+        totalCost += cost[route[i]][route[i + 1]];
+    }
+
+    return totalCost;
+}
+
+int main() {
+    int numCities;
+
+    // Ask the user for the number of cities
+    cout << "Enter the number of cities: ";
+    cin >> numCities;
+
+    vector<vector<int>> cost(numCities, vector<int>(numCities));
+
+    // Input the cost matrix
+    cout << "Enter the cost matrix:" << endl;
+    for (int i = 0; i < numCities; i++) {
+        for (int j = 0; j < numCities; j++) {
+            cout << "Cost from city " << getCityName(i) << " to city " << getCityName(j) << ": ";
+            cin >> cost[i][j];
+        }
+    }
+
+    while (true) {
+        int option;
+        cout << "\nOptions:\n";
+        cout << "1. Find the minimum cost route (TSP)\n";
+        cout << "2. Calculate the cost of a custom route\n";
+        cout << "3. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> option;
+
+        if (option == 1) {
+            // Solve TSP and show all routes
+            int result = tsp(cost);
+            cout << "\nMinimum Cost (TSP): " << result << endl;
+        } else if (option == 2) {
+            // Ask the user for their custom route
+            cout << "Enter your route as a sequence of cities (e.g., A C D B): ";
+            vector<int> customRoute;
+            string route;
+            cin.ignore(); // Clear the input buffer
+            getline(cin, route);
+
+            // Convert the city names to indices
+            for (char city : route) {
+                if (city != ' ') {
+                    customRoute.push_back(getCityIndex(city));
+                }
+            }
+
+            // Calculate and display the cost of the custom route
+            int customCost = calculateRouteCost(cost, customRoute);
+            cout << "Custom Route: ";
+            for (int i = 0; i < customRoute.size(); i++) {
+                cout << getCityName(customRoute[i]);
+                if (i < customRoute.size() - 1) {
+                    cout << " --> ";
+                }
+            }
+            cout << "\nTotal Cost of Custom Route: " << customCost << endl;
+        } else if (option == 3) {
+            // Exit the program
+            cout << "Exiting...\n";
+            break;
+        } else {
+            cout << "Invalid choice! Please try again.\n";
+        }
+    }
+
+    return 0;
+}
